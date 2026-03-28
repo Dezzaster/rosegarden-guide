@@ -33,30 +33,23 @@ html{font-size:16px;scroll-behavior:smooth}
 body{font-family:var(--sn);color:var(--text);background-color:var(--bg);background:var(--bg);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.6;transition:background .4s,color .4s}
 
 /* SPLASH INTRO */
-.splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:splashOut .8s 2.8s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
-.splash-logo{width:280px;max-width:65vw;opacity:0;animation:splashLogoIn .6s .2s ease forwards,splashOrbitLogo 1.2s 1.4s cubic-bezier(.45,0,.55,1) forwards}
+.splash{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;pointer-events:none}
+.splash.done{animation:splashBgOut .4s .1s ease forwards}
+.splash-logo{width:280px;max-width:65vw;opacity:0;animation:splashFadeIn .6s .2s ease forwards}
+.splash.done .splash-logo{animation:splashLogoFly .9s cubic-bezier(.4,0,.2,1) forwards}
 [data-theme="light"] .splash-logo{filter:brightness(0) sepia(1) hue-rotate(15deg) saturate(.4) brightness(.4)}
-.splash-text{font-size:.8rem;color:var(--t3);letter-spacing:.35em;text-transform:uppercase;font-family:var(--sn);opacity:0;animation:splashTextIn .6s .5s ease forwards,splashOrbitText 1.2s 1.4s cubic-bezier(.45,0,.55,1) forwards}
-@keyframes splashLogoIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
-@keyframes splashTextIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes splashOrbitLogo{
-0%{transform:translateX(0) translateY(0) scale(1);opacity:1}
-25%{transform:translateX(40px) translateY(20px) scale(.95);opacity:1}
-50%{transform:translateX(0) translateY(40px) scale(.9);opacity:1}
-75%{transform:translateX(-40px) translateY(20px) scale(.85);opacity:1}
-100%{transform:translateX(0) translateY(0) scale(.8);opacity:1}
+.splash-text{font-size:.8rem;color:var(--t3);letter-spacing:.35em;text-transform:uppercase;font-family:var(--sn);opacity:0;animation:splashFadeIn .6s .5s ease forwards}
+.splash.done .splash-text{animation:splashTextFly .9s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes splashFadeIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes splashLogoFly{
+0%{opacity:1;transform:translate(0,0) scale(1)}
+100%{opacity:0;transform:translate(0,calc(-50vh + 90px)) scale(.71)}
 }
-@keyframes splashOrbitText{
-0%{transform:translateX(0) translateY(0);opacity:1}
-25%{transform:translateX(-40px) translateY(-20px);opacity:1}
-50%{transform:translateX(0) translateY(-40px);opacity:1}
-75%{transform:translateX(40px) translateY(-20px);opacity:1}
-100%{transform:translateX(0) translateY(0);opacity:1}
+@keyframes splashTextFly{
+0%{opacity:1;transform:translate(0,0)}
+100%{opacity:0;transform:translate(0,calc(-50vh + 130px)) scale(.75)}
 }
-@keyframes splashOut{
-0%{opacity:1;transform:scale(1)}
-100%{opacity:0;transform:scale(1.05);visibility:hidden}
-}
+@keyframes splashBgOut{to{opacity:0;visibility:hidden}}
 
 /* HERO */
 .hero{position:relative;padding:44px 20px 24px;text-align:center;background:linear-gradient(180deg,var(--hero-top),var(--hero-mid) 50%,var(--hero-end));transition:background .6s}
@@ -64,20 +57,20 @@ body{font-family:var(--sn);color:var(--text);background-color:var(--bg);backgrou
 .tbtn{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .3s;color:var(--acc)}
 [data-theme="light"] .tbtn{border-color:rgba(140,120,60,.15);background:rgba(140,120,60,.06);color:var(--gold)}
 .tbtn:hover{transform:scale(1.1)}
-.hlogo{width:200px;max-width:55vw;opacity:0;animation:heroLogoIn .6s 2.6s ease forwards}
+.hlogo{width:200px;max-width:55vw;opacity:0;animation:heroIn .5s 2.2s ease forwards}
 [data-theme="light"] .hlogo{filter:brightness(0) sepia(1) hue-rotate(15deg) saturate(.4) brightness(.4)}
-@keyframes heroLogoIn{from{opacity:0;transform:scale(.9) translateY(8px)}to{opacity:1;transform:none}}
-.hg{font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.25em;text-transform:uppercase;margin-top:12px;opacity:0;animation:fi .5s 2.9s ease forwards}
+@keyframes heroIn{from{opacity:0;transform:scale(1.1)}to{opacity:1;transform:none}}
+.hg{font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.25em;text-transform:uppercase;margin-top:12px;opacity:0;animation:fi .4s 2.4s ease forwards}
 [data-theme="light"] .hg{color:#8A7A5A}
 @keyframes fi{to{opacity:1}}
-.lbar{display:flex;justify-content:center;gap:5px;margin-top:14px;opacity:0;animation:fi .5s 3.1s ease forwards;flex-wrap:wrap}
+.lbar{display:flex;justify-content:center;gap:5px;margin-top:14px;opacity:0;animation:fi .4s 2.5s ease forwards;flex-wrap:wrap}
 .lb{padding:5px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.3);font-size:.66rem;font-family:var(--sn);cursor:pointer;transition:all .25s}
 .lb.active{border-color:var(--gold);color:var(--gold);background:var(--goldd)}
 [data-theme="light"] .lb{border-color:var(--cb);color:var(--t2)}
 [data-theme="light"] .lb.active{border-color:var(--gold);color:var(--gold);background:var(--goldd)}
 
 /* NAV */
-.nav{position:sticky;top:0;z-index:100;background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cb);padding:10px 12px;overflow-x:auto;scrollbar-width:none;display:flex;gap:6px;justify-content:center;opacity:0;animation:fi .5s 3.2s ease forwards}.nav::-webkit-scrollbar{display:none}
+.nav{position:sticky;top:0;z-index:100;background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cb);padding:10px 12px;overflow-x:auto;scrollbar-width:none;display:flex;gap:6px;justify-content:center;opacity:0;animation:fi .4s 2.6s ease forwards}.nav::-webkit-scrollbar{display:none}
 .np{flex-shrink:0;padding:6px 14px;border-radius:14px;background:transparent;border:1px solid var(--cb);color:var(--t2);font-size:.68rem;font-family:var(--sn);font-weight:500;cursor:pointer;transition:all .3s var(--b);white-space:nowrap}
 .np:hover{transform:scale(1.1);background:var(--acd);color:var(--acc)}.np.active{background:var(--acd);color:var(--acc);border-color:rgba(139,175,132,.2);transform:scale(1.05)}
 
@@ -384,8 +377,16 @@ body{font-family:var(--sn);color:var(--text);background-color:var(--bg);backgrou
 <div class="footer"><p>Rose Garden Premium Hotel ★★★★<br>Atatürk Cd. No:101, Başkomutan, Beldibi, 07900 Kemer / Antalya<br><a href="tel:+902422550110">+90 242 255 0110</a> · <a href="https://rosegardenhotel.com.tr">rosegardenhotel.com.tr</a> · <a href="https://instagram.com/rosegardenpremium">@rosegardenpremium</a></p><p style="margin-top:4px;font-size:.55rem;opacity:.35" data-i18n="ft">Season 2026 · 24 Apr – 31 Oct</p></div>
 
 <script>
-/* Splash - clone logo */
-(function(){var h=document.querySelector('.hlogo');var s=document.getElementById('splashLogo');if(h&&s){s.src=h.src}var sp=document.getElementById('splash');if(sp){sp.addEventListener('animationend',function(e){if(e.animationName==='splashOut'){sp.remove()}})}})();
+/* Splash - clone logo & animate to header */
+(function(){
+var h=document.querySelector('.hlogo');var s=document.getElementById('splashLogo');
+if(h&&s){s.src=h.src}
+var sp=document.getElementById('splash');
+if(sp){
+setTimeout(function(){sp.classList.add('done')},1300);
+sp.addEventListener('animationend',function(e){if(e.animationName==='splashBgOut'){sp.remove()}});
+}
+})();
 
 /* Theme */
 function TT(){var d=document.documentElement,t=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=t;document.getElementById('ti').textContent=t==='dark'?'☀️':'🌙';document.querySelector('meta[name=theme-color]').content=t==='dark'?'#080808':'#F5EFE0';try{localStorage.setItem('rgt',t)}catch(e){}}
