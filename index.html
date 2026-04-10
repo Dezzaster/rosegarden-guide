@@ -74,7 +74,8 @@ body{font-family:var(--sn);color:var(--text);background-color:var(--bg);backgrou
 [data-theme="light"] .lb.active{border-color:var(--gold);color:var(--gold);background:var(--goldd)}
 
 /* NAV */
-.nav{position:sticky;top:0;z-index:100;background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cb);padding:10px 12px;overflow-x:auto;scrollbar-width:none;display:flex;gap:6px;justify-content:center;opacity:0;animation:fi .3s 2.2s ease forwards}.nav::-webkit-scrollbar{display:none}
+.nav{position:sticky;top:0;z-index:100;background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--cb);padding:10px 12px;overflow-x:auto;scrollbar-width:none;display:flex;gap:6px;justify-content:flex-start;opacity:0;animation:fi .3s 2.2s ease forwards}.nav::-webkit-scrollbar{display:none}
+.nav>.np:first-child{margin-left:auto}.nav>.np:last-child{margin-right:auto}
 .np{flex-shrink:0;padding:6px 14px;border-radius:14px;background:transparent;border:1px solid var(--cb);color:var(--t2);font-size:.68rem;font-family:var(--sn);font-weight:500;cursor:pointer;transition:all .3s var(--b);white-space:nowrap}
 .np:hover{transform:scale(1.1);background:var(--acd);color:var(--acc)}.np.active{background:var(--acd);color:var(--acc);border-color:rgba(139,175,132,.2);transform:scale(1.05)}
 
@@ -775,7 +776,9 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch
 
 /* PWA Install */
 var deferredPrompt=null;
-var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document);
+var ua=navigator.userAgent;
+var isIOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document);
+var isAndroid=/Android/.test(ua);
 var isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
 
 function showPwaBtn(){
@@ -788,16 +791,45 @@ document.getElementById('pwaTip').classList.remove('show');
 document.getElementById('pwaTipBg').classList.remove('show');
 sessionStorage.setItem('pwa_dismissed','1');
 }
+function setTipInstructions(platform){
+var steps={
+ios:{
+title:{en:'Add to Home Screen',ru:'На экран «Домой»',tr:'Ana Ekrana Ekle',de:'Zum Home-Bildschirm'},
+s1:{en:'Tap <strong>Share</strong> <span class="pwa-tip-icon">⎙</span> at the bottom of Safari',ru:'Нажмите <strong>«Поделиться»</strong> <span class="pwa-tip-icon">⎙</span> внизу Safari',tr:'Safari\'nin altındaki <strong>Paylaş</strong> <span class="pwa-tip-icon">⎙</span> simgesine dokunun',de:'Tippen Sie auf <strong>Teilen</strong> <span class="pwa-tip-icon">⎙</span> unten in Safari'},
+s2:{en:'Scroll down and tap <strong>"Add to Home Screen"</strong>',ru:'Пролистайте и нажмите <strong>«На экран Домой»</strong>',tr:'Aşağı kaydırıp <strong>"Ana Ekrana Ekle"</strong> seçin',de:'Scrollen und <strong>„Zum Home-Bildschirm"</strong> wählen'},
+s3:{en:'Tap <strong>"Add"</strong> — done!',ru:'Нажмите <strong>«Добавить»</strong> — готово!',tr:'<strong>"Ekle"</strong> — tamam!',de:'<strong>„Hinzufügen"</strong> — fertig!'}
+},
+android:{
+title:{en:'Install App',ru:'Установить приложение',tr:'Uygulamayı Yükle',de:'App installieren'},
+s1:{en:'Tap the <strong>menu</strong> <span class="pwa-tip-icon">⋮</span> in the top right',ru:'Нажмите <strong>меню</strong> <span class="pwa-tip-icon">⋮</span> в правом верхнем углу',tr:'Sağ üstteki <strong>menü</strong> <span class="pwa-tip-icon">⋮</span> simgesine dokunun',de:'Tippen Sie auf das <strong>Menü</strong> <span class="pwa-tip-icon">⋮</span> oben rechts'},
+s2:{en:'Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>',ru:'Выберите <strong>«Установить приложение»</strong> или <strong>«Добавить на главный экран»</strong>',tr:'<strong>"Uygulamayı yükle"</strong> veya <strong>"Ana ekrana ekle"</strong> seçin',de:'<strong>„App installieren"</strong> oder <strong>„Zum Startbildschirm zufügen"</strong> wählen'},
+s3:{en:'Tap <strong>"Install"</strong> — done!',ru:'Нажмите <strong>«Установить»</strong> — готово!',tr:'<strong>"Yükle"</strong> — tamam!',de:'<strong>„Installieren"</strong> — fertig!'}
+}
+};
+var p=steps[platform]||steps.android;
+var q=document.querySelectorAll('#pwaTip .pwa-tip-text');
+document.querySelector('#pwaTip .pwa-tip-title').textContent=p.title[cl]||p.title.en;
+if(q[0])q[0].innerHTML=p.s1[cl]||p.s1.en;
+if(q[1])q[1].innerHTML=p.s2[cl]||p.s2.en;
+if(q[2])q[2].innerHTML=p.s3[cl]||p.s3.en;
+}
 /* Android / Desktop — native prompt */
 window.addEventListener('beforeinstallprompt',function(e){
 e.preventDefault();deferredPrompt=e;showPwaBtn();
 });
 /* iOS — show after short delay */
 if(isIOS&&!isStandalone){setTimeout(showPwaBtn,2500)}
+/* Android fallback — if native prompt didn't fire (Firefox/Samsung/etc.) show manual tip */
+if(isAndroid&&!isStandalone){setTimeout(function(){if(!deferredPrompt)showPwaBtn()},3500)}
 
 document.getElementById('pwaBtn').addEventListener('click',function(){
 if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;hidePwaAll()})}
-else if(isIOS){document.getElementById('pwaInstall').classList.remove('show');document.getElementById('pwaTip').classList.add('show');document.getElementById('pwaTipBg').classList.add('show')}
+else{
+setTipInstructions(isIOS?'ios':'android');
+document.getElementById('pwaInstall').classList.remove('show');
+document.getElementById('pwaTip').classList.add('show');
+document.getElementById('pwaTipBg').classList.add('show');
+}
 });
 document.getElementById('pwaClose').addEventListener('click',hidePwaAll);
 document.getElementById('pwaTipClose').addEventListener('click',hidePwaAll);
@@ -810,12 +842,15 @@ attempt=attempt||1;
 var lat=36.575;var lon=30.55;
 var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FIstanbul&forecast_days=5';
 var w=document.getElementById('weatherWidget');
-fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(function(d){
+var ctrl=('AbortController' in window)?new AbortController():null;
+var to=setTimeout(function(){if(ctrl)ctrl.abort()},7000);
+fetch(url,ctrl?{signal:ctrl.signal,cache:'no-store'}:{cache:'no-store'}).then(function(r){clearTimeout(to);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(function(d){
 if(!d||!d.current||!d.daily)throw new Error('bad data');
 renderWeather(d);
 }).catch(function(err){
+clearTimeout(to);
 console.warn('Weather load failed (attempt '+attempt+'):',err);
-if(attempt<3){setTimeout(function(){loadWeather(attempt+1)},attempt*2000)}
+if(attempt<3){setTimeout(function(){loadWeather(attempt+1)},attempt*1500)}
 else{w.style.display='none'}
 });
 }
