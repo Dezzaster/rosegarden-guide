@@ -822,39 +822,65 @@ document.getElementById('pwaTipBg').addEventListener('click',hidePwaAll);
 window.addEventListener('appinstalled',function(){hidePwaAll()});
 
 /* Weather — Open-Meteo API (free, no key) */
+var weatherLoaded=false;
+var WEATHER_URL='https://api.open-meteo.com/v1/forecast?latitude=36.575&longitude=30.55&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FIstanbul&forecast_days=5';
 function loadWeather(attempt){
 attempt=attempt||1;
-var lat=36.575;var lon=30.55;
-var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FIstanbul&forecast_days=5';
 var w=document.getElementById('weatherWidget');
-/* On first attempt, render cached data immediately so the widget never
-   shows '--' for users who've loaded the page before (within 12h). */
 if(attempt===1){
 try{
 var raw=localStorage.getItem('rgWeather');
 if(raw){
 var cd=JSON.parse(raw);
-if(cd&&cd.data&&(Date.now()-cd.ts)<43200000)renderWeather(cd.data);
+if(cd&&cd.data&&(Date.now()-cd.ts)<43200000){renderWeather(cd.data);weatherLoaded=true}
 }
 }catch(e){}
 }
-var ctrl=('AbortController' in window)?new AbortController():null;
-var to=setTimeout(function(){if(ctrl)ctrl.abort()},10000);
-var fetchUrl=url+'&_t='+Date.now();
-fetch(fetchUrl,ctrl?{signal:ctrl.signal}:{}).then(function(r){clearTimeout(to);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(function(d){
-if(!d||!d.current||!d.daily)throw new Error('bad data');
+var done=false;
+var fetchUrl=WEATHER_URL+'&_t='+Date.now();
+function onSuccess(d){
+if(done)return;done=true;
+if(!d||!d.current||!d.daily)return onFail('bad data');
 try{localStorage.setItem('rgWeather',JSON.stringify({ts:Date.now(),data:d}))}catch(e){}
-renderWeather(d);
-}).catch(function(err){
-clearTimeout(to);
-console.warn('Weather load failed (attempt '+attempt+'):',err);
+renderWeather(d);weatherLoaded=true;
+}
+function onFail(err){
+if(done)return;done=true;
+console.warn('Weather attempt '+attempt+' failed:',err);
 if(attempt<3){setTimeout(function(){loadWeather(attempt+1)},attempt*1500)}
-else{
-/* Only hide if we never managed to render anything (no cache, no live). */
-if(document.getElementById('wtTemp').textContent==='--')w.style.display='none';
+else{loadWeatherXHR()}
 }
+if(typeof fetch!=='undefined'){
+var ctrl=('AbortController' in window)?new AbortController():null;
+var to=setTimeout(function(){if(ctrl)ctrl.abort();onFail('timeout')},10000);
+fetch(fetchUrl,ctrl?{signal:ctrl.signal,mode:'cors'}:{mode:'cors'}).then(function(r){
+clearTimeout(to);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()
+}).then(onSuccess).catch(function(e){clearTimeout(to);onFail(e)});
+}else{loadWeatherXHR()}
+}
+function loadWeatherXHR(){
+var xhr=new XMLHttpRequest();
+var xhrUrl=WEATHER_URL+'&_t='+Date.now();
+xhr.open('GET',xhrUrl,true);
+xhr.timeout=12000;
+xhr.onload=function(){
+if(xhr.status>=200&&xhr.status<300){
+try{var d=JSON.parse(xhr.responseText);
+if(d&&d.current&&d.daily){
+try{localStorage.setItem('rgWeather',JSON.stringify({ts:Date.now(),data:d}))}catch(e){}
+renderWeather(d);weatherLoaded=true;
+}
+}catch(e){console.warn('Weather XHR parse error:',e)}
+}
+};
+xhr.onerror=function(){console.warn('Weather XHR network error')};
+xhr.ontimeout=function(){console.warn('Weather XHR timeout')};
+xhr.send();
+}
+document.addEventListener('visibilitychange',function(){
+if(!document.hidden&&!weatherLoaded)loadWeather();
 });
-}
+window.addEventListener('online',function(){if(!weatherLoaded)loadWeather()});
 function weatherEmoji(code){
 if(code===0)return'\u2600\uFE0F';if(code<=3)return'\u26C5';if(code<=48)return'\uD83C\uDF2B\uFE0F';
 if(code<=57)return'\uD83C\uDF27\uFE0F';if(code<=67)return'\uD83C\uDF27\uFE0F';if(code<=77)return'\u2744\uFE0F';
